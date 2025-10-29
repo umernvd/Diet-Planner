@@ -1,6 +1,5 @@
-# diet_planner_app
-
-A new Flutter project.
+# Diet-Planner
+A new Flutter project for planning and tracking diets.
 
 ## Getting Started
 
