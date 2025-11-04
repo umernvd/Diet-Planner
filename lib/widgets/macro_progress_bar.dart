@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
 
 class MacroProgressBar extends StatelessWidget {
   final double proteinPct;
@@ -17,6 +19,7 @@ class MacroProgressBar extends StatelessWidget {
     Color color,
     double pct,
     String label,
+    IconData icon,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,22 +27,68 @@ class MacroProgressBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: Theme.of(context).textTheme.labelSmall),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color.withAlpha(25),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, size: 16, color: color),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label, 
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
             Text(
               '${(pct * 100).toStringAsFixed(0)}%',
-              style: Theme.of(context).textTheme.labelSmall,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: pct.clamp(0.0, 1.0),
-            backgroundColor: color.withValues(alpha: 40),
-            valueColor: AlwaysStoppedAnimation(color),
-            minHeight: 8,
-          ),
+        const SizedBox(height: 8),
+        Stack(
+          children: [
+            // Background track
+            Container(
+              height: 12,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: color.withAlpha(25),
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            
+            // Animated progress
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutQuart,
+              height: 12,
+              width: MediaQuery.of(context).size.width * pct.clamp(0.0, 1.0) * 0.7, // Adjust width based on parent
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withAlpha(77),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            )
+            .animate(onPlay: (controller) => controller.repeat())
+            .shimmer(duration: 2000.ms, color: Colors.white.withAlpha(51)),
+          ],
         ),
       ],
     );
@@ -47,16 +96,44 @@ class MacroProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      children: [
-        _buildBar(context, theme.colorScheme.primary, proteinPct, 'Protein'),
-        const SizedBox(height: 8),
-        _buildBar(context, theme.colorScheme.secondary, carbsPct, 'Carbs'),
-        const SizedBox(height: 8),
-        _buildBar(context, theme.colorScheme.tertiary, fatPct, 'Fat'),
-      ],
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Macronutrients',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            _buildBar(
+              context,
+              const Color(0xFF4CAF50), // Protein - Green
+              proteinPct,
+              'Protein',
+              Icons.fitness_center,
+            ),
+            const SizedBox(height: 16),
+            _buildBar(
+              context,
+              const Color(0xFFFFA000), // Carbs - Amber
+              carbsPct,
+              'Carbs',
+              Icons.grain,
+            ),
+            const SizedBox(height: 16),
+            _buildBar(
+              context,
+              const Color(0xFFF44336), // Fat - Red
+              fatPct,
+              'Fat',
+              Icons.opacity,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
